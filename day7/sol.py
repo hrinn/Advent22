@@ -1,10 +1,9 @@
 class Node:
-    def __init__(self, name, parent, fs_type, size = None):
+    def __init__(self, name, parent, size = None):
         self.name = name
         self.parent = parent
         self.size = size
         self.children = []
-        self.type = fs_type
 
     def add_child(self, child):
         self.children.append(child)
@@ -12,22 +11,19 @@ class Node:
 def create_directory_tree(filename):
     f = open(filename, "r")
 
-    root = Node("/", "dir", None)
+    root = Node("/", None)
     current = None
 
     for line in f.readlines():
         data = line.strip().split()
         if data[0] == "$":
-            # command
+            # execute command
             if data[1] == "cd":
                 if data[2] == "..":
-                    # change level up
                     current = current.parent
                 elif data[2] == "/":
-                    # change to /
                     current = root
                 else:
-                    # change to existing dir
                     for child in current.children:
                         if child.name == data[2]:
                             current = child
@@ -35,70 +31,44 @@ def create_directory_tree(filename):
 
             elif data[1] == "ls":
                 pass
-
             else:
                 raise Exception(f"unknown command {data[1]}")
-
         else:
-            # directory item
-            # add node
+            # add directory item to graph
             if data[0] == "dir":
                 # directory
-                current.add_child(Node(data[1], current, "dir"))
+                current.add_child(Node(data[1], current))
             else:
                 # file
-                current.add_child(Node(data[1], current, "file", int(data[0])))
+                current.add_child(Node(data[1], current, int(data[0])))
 
     return root
 
-def set_dir_sizes(node):
+def set_dir_sizes(node, dir_sizes):
     if node.size is not None:
         return node.size
 
-    # directory
+    # directory, calculate size
     node.size = 0
     for child in node.children:
         node.size = node.size + set_dir_sizes(child)
 
+    # add directory sizes to list
+    dir_sizes.append(node.size)
+
     return node.size
 
-def part1(node):
-    if node.type == "file":
-        return 0
+def part1(dir_sizes):
+    total = 0
 
-    s = 0
+    for size in dir_sizes:
+        if size <= 100000:
+            total = total + size
+        else:
+            return total
 
-    if node.size <= 100000:
-        s = node.size
-
-    for child in node.children:
-        s = s + part1(child)
-
-    return s
-
-        
-def get_dir_sizes(node, l):
-    if node.type == "file":
-        return
-
-    l.append(node.size)
-    for child in node.children:
-        get_dir_sizes(child, l)
-    
-
-def part2(root):
-    # part 2
-    total_disk = 70000000
-    space_needed = 30000000
-    unused_disk = total_disk - root.size
-    delete_needed = space_needed - unused_disk
-
-    print("needed space:", delete_needed)
-
-    # find smallest directory of that has size >= delete_needed
-    dir_sizes = []
-    get_dir_sizes(root, dir_sizes)
-    dir_sizes.sort()
+def part2(dir_sizes):
+    delete_needed = root.size - 40000000
 
     for size in dir_sizes:
         if size >= delete_needed:
@@ -106,10 +76,12 @@ def part2(root):
 
 def sol(filename):
     root = create_directory_tree(filename)
-    set_dir_sizes(root)
+    dir_sizes = []
+    set_dir_sizes(root, dir_sizes)
+    dir_sizes.sort()
     
-    print("sum of dirs at most 100k:", part1(root))
-    print("smallest directory of size >= needed space", part2(root))
+    print("sum of dirs at most 100k:", part1(dir_sizes))
+    print("smallest directory of size >= needed space", part2(dir_sizes))
 
 
 # sol("example")
