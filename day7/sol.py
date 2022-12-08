@@ -51,7 +51,7 @@ def set_dir_sizes(node, dir_sizes):
     # directory, calculate size
     node.size = 0
     for child in node.children:
-        node.size = node.size + set_dir_sizes(child)
+        node.size = node.size + set_dir_sizes(child, dir_sizes)
 
     # add directory sizes to list
     dir_sizes.append(node.size)
@@ -67,7 +67,7 @@ def part1(dir_sizes):
         else:
             return total
 
-def part2(dir_sizes):
+def part2(root, dir_sizes):
     delete_needed = root.size - 40000000
 
     for size in dir_sizes:
@@ -81,7 +81,7 @@ def sol(filename):
     dir_sizes.sort()
     
     print("sum of dirs at most 100k:", part1(dir_sizes))
-    print("smallest directory of size >= needed space", part2(dir_sizes))
+    print("smallest directory of size >= needed space", part2(root, dir_sizes))
 
 
 # sol("example")
