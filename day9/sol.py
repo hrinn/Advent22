@@ -31,7 +31,7 @@ def clamp_vector(v):
     )
 
 
-def sol(filename):
+def sol(filename, rope_length):
     f = open(filename, "r")
 
     head = (0, 0)
@@ -43,18 +43,16 @@ def sol(filename):
         op, num = (line.strip().split())
         num = int(num)
 
-        print(line.strip())
-
         for _ in range(num):
             head = add(head, dirs.get(op))
 
-            if distance(head, tail) > 1:
+            if distance(head, tail) > rope_length:
                 v = clamp_vector(vector(head, tail))
                 tail = add(tail, v)
                 positions.add(tail)
 
-    print(positions)
     print(len(positions))
 
 
-sol(sys.argv[1])
+sol(sys.argv[1], 1)
+sol(sys.argv[1], 10)
